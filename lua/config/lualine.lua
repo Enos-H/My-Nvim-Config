@@ -2,7 +2,7 @@ local ok_lualine, lualine = pcall(require, 'lualine')
 if ok_lualine then
   lualine.setup {
     options = {
-      theme = "catppuccin",
+      theme = "catppuccin-mocha",
       icons_enabled = true,
       section_separators = { left = '', right = '' },
       component_separators = { left = '', right = '' },

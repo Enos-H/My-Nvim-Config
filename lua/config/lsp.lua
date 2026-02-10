@@ -1,52 +1,36 @@
--- ======================================
--- Configuração de LSP (Language Servers)
--- ======================================
+local ok_lspconfig, lspconfig = pcall(require, "lspconfig")
+local ok_cmp_nvim_lsp, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
 
-local lspconfig = require('lspconfig')
-local cmp_capabilities = require('cmp_nvim_lsp').default_capabilities()
+if ok_lspconfig and ok_cmp_nvim_lsp then
+  
+  local capabilities = cmp_nvim_lsp.default_capabilities()
+  local on_attach = function(_, bufnr)
+    local opts = { noremap = true, silent = true, buffer = bufnr }
+    local map = vim.keymap.set
 
--- Função que ativa atalhos quando o LSP conecta
-local on_attach = function(_, bufnr)
-  local opts = { noremap = true, silent = true, buffer = bufnr }
+    map('n', 'gd', vim.lsp.buf.definition, opts)
+    map('n', 'K', vim.lsp.buf.hover, opts)
+    map('n', 'gi', vim.lsp.buf.implementation, opts)
+    map('n', 'rn', vim.lsp.buf.rename, opts)
+    map('n', 'ca', vim.lsp.buf.code_action, opts)
+    map('n', '[d', vim.diagnostic.goto_prev, opts)
+    map('n', ']d', vim.diagnostic.goto_next, opts)
+  end
 
-  vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
-  vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
-  vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
-  vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, opts)
-  vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
-  vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, opts)
-  vim.keymap.set('n', ']d', vim.diagnostic.goto_next, opts)
+  lspconfig.tsserver.setup {
+    capabilities = capabilities,
+    on_attach = on_attach
+  }
+
+  lspconfig.lua_ls.setup {
+    capabilities = capabilities,
+    on_attach = on_attach,
+    settings = {
+      Lua = {
+        diagnostics = { globals = { "vim" } },
+        workspace = { library = vim.api.nvim_get_runtime_file("", true) },
+      },
+    },
+  }
 end
 
--- TypeScript / JavaScript
-lspconfig.tsserver.setup {
-  capabilities = cmp_capabilities,
-  on_attach = on_attach
-}
-
--- Lua (para Neovim e plugins em Lua)
-lspconfig.lua_ls.setup {
-  capabilities = cmp_capabilities,
-  on_attach = on_attach,
-  settings = {
-    Lua = {
-      diagnostics = { globals = { "vim" } },
-      workspace = { library = vim.api.nvim_get_runtime_file("", true) },
-    },
-  },
-}
-
--- Treesitter (highlight e indentação melhorados)
-require('nvim-treesitter.configs').setup {
-  ensure_installed = { "lua", "javascript", "typescript", "html", "css", "json", "scheme", "yuck" },
-  sync_install = false,       -- instala em paralelo
-  auto_install = true,        -- instala automaticamente parsers faltando
-  ignore_install = {},        -- lista de parsers ignorados
-  modules = {},               -- campo exigido pelo TSConfig
-
-  highlight = { enable = true },
-  indent = {
-    enable = true,
-    disable = { "yuck" },     -- desativa indentação só para yuck
-  },
-}

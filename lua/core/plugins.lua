@@ -116,6 +116,7 @@ return require('packer').startup(function(use)
    -- -------------------------------------
   --  JAVA + SPRING BOOT + MAVEN
   -- -------------------------------------
+  use { 'mfussenegger/nvim-dap' }
   use { 'williamboman/mason.nvim' }
   use { 'williamboman/mason-lspconfig.nvim' }
   use { 'WhoIsSethDaniel/mason-tool-installer.nvim' }
