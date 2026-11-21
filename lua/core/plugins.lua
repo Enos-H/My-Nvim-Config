@@ -1,139 +1,107 @@
 -- =====================================
---   Gerenciador de Plugins: packer.nvim
+--   Gerenciador de Plugins: lazy.nvim
 -- =====================================
 
---  Bootstrap automático do packer
-local ensure_packer = function()
-  local fn = vim.fn
-  local install_path = fn.stdpath('data') .. '/site/pack/packer/start/packer.nvim'
-  if fn.empty(fn.glob(install_path)) > 0 then
-    fn.system({ 'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path })
-    vim.cmd [[packadd packer.nvim]]
-    return true
+-- Bootstrap automático do lazy.nvim
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.uv.fs_stat(lazypath) then
+  local out = vim.fn.system({
+    "git", "clone", "--filter=blob:none", "--branch=stable",
+    "https://github.com/folke/lazy.nvim.git", lazypath,
+  })
+  if vim.v.shell_error ~= 0 then
+    vim.api.nvim_echo({
+      { "Falha ao clonar lazy.nvim:\n", "ErrorMsg" },
+      { out, "WarningMsg" },
+    }, true, {})
+    return
   end
-  return false
 end
+vim.opt.rtp:prepend(lazypath)
 
-local packer_bootstrap = ensure_packer()
-vim.cmd [[packadd packer.nvim]]
+require("lazy").setup({
+  spec = {
+    -- -------------------------------------
+    --  Aparência e Interface
+    -- -------------------------------------
+    { "nvim-tree/nvim-web-devicons" },
+    { "nvim-lualine/lualine.nvim" },
+    { "morhetz/gruvbox" },
+    { "catppuccin/nvim", name = "catppuccin", priority = 1000 },
+    { "OXY2DEV/markview.nvim" },  -- Preview de Markdown/LaTeX/Typst/YAML
+    { "3rd/image.nvim" },         -- Renderiza imagens (mermaid, svg, png) no buffer
 
--- =====================================
---  Plugins
--- =====================================
-return require('packer').startup(function(use)
+    -- -------------------------------------
+    --  Syntax Highlighting & Parsing
+    -- -------------------------------------
+    { "nvim-treesitter/nvim-treesitter", branch = "master", build = ":TSUpdate" },
 
-  --  Packer pode se atualizar
-  use { 'wbthomason/packer.nvim' }
+    -- -------------------------------------
+    --  LSP
+    -- -------------------------------------
+    { "neovim/nvim-lspconfig" },
+    { "mason-org/mason.nvim" },
+    { "mason-org/mason-lspconfig.nvim" },
+    { "WhoIsSethDaniel/mason-tool-installer.nvim" },
 
-  -- -------------------------------------
-  --  Aparência e Interface
-  -- -------------------------------------
-  use { 'nvim-tree/nvim-web-devicons' }   -- Ícones
-  use { 'nvim-lualine/lualine.nvim' }     -- Barra de status (statusline)
-  use { 'morhetz/gruvbox' }
-  use { 'catppuccin/nvim', as = 'catppuccin' }
+    -- -------------------------------------
+    --  Fuzzy Finder e Navegação
+    -- -------------------------------------
+    { "nvim-telescope/telescope.nvim", dependencies = { "nvim-lua/plenary.nvim" } },
+    { "nvim-telescope/telescope-file-browser.nvim", dependencies = { "nvim-telescope/telescope.nvim" } },
+    { "junegunn/fzf", build = "./install --bin" },
+    { "junegunn/fzf.vim" },
 
+    -- -------------------------------------
+    --  Autocompletar e Snippets
+    -- -------------------------------------
+    { "hrsh7th/nvim-cmp" },
+    { "hrsh7th/cmp-nvim-lsp" },
+    { "hrsh7th/cmp-buffer" },
+    { "hrsh7th/cmp-path" },
+    { "hrsh7th/cmp-cmdline" },
+    { "L3MON4D3/LuaSnip" },
+    { "saadparwaiz1/cmp_luasnip" },
 
-  -- -------------------------------------
-  --  Syntax Highlighting & Parsing
-  -- -------------------------------------
-  use {
-    'nvim-treesitter/nvim-treesitter',
-    run = ':TSUpdate',
-  }
+    -- -------------------------------------
+    --  Explorador de Arquivos
+    -- -------------------------------------
+    {
+      "nvim-neo-tree/neo-tree.nvim",
+      branch = "v3.x",
+      dependencies = { "nvim-lua/plenary.nvim", "nvim-tree/nvim-web-devicons", "MunifTanjim/nui.nvim" },
+    },
 
-  -- -------------------------------------
-  --  LSP (Language Server Protocol)
-  -- -------------------------------------
-  use {
-    'neovim/nvim-lspconfig',
-    tag = 'v0.1.7',
-  }
+    -- -------------------------------------
+    --  Git
+    -- -------------------------------------
+    { "NeogitOrg/neogit", dependencies = { "sindrets/diffview.nvim", "nvim-lua/plenary.nvim" } },
+    { "sindrets/diffview.nvim" },
 
-  -- -------------------------------------
-  --  Fuzzy Finder e Navegação
-  -- -------------------------------------
-  use {
-    'nvim-telescope/telescope.nvim',
-    requires = { 'nvim-lua/plenary.nvim' },
-  }
+    -- -------------------------------------
+    --  S-expressions (Yuck)
+    -- -------------------------------------
+    { "guns/vim-sexp" },
+    { "tpope/vim-sexp-mappings-for-regular-people" },
 
-  use {
-    'nvim-telescope/telescope-file-browser.nvim',
-    requires = { 'nvim-telescope/telescope.nvim' },
-  }
-
-  -- Alternativa FZF (busca ultrarrápida)
-  use { 'junegunn/fzf', run = './install --bin' }
-  use { 'junegunn/fzf.vim' }
-
-  -- -------------------------------------
-  --  Autocompletar e Snippets
-  -- -------------------------------------
-  -- Engine principal
-  use { 'hrsh7th/nvim-cmp' }
-
-  -- Fontes de autocomplete
-  use { 'hrsh7th/cmp-nvim-lsp' }  -- integração com LSP
-  use { 'hrsh7th/cmp-buffer' }    -- palavras do buffer
-  use { 'hrsh7th/cmp-path' }      -- caminhos de arquivo
-  use { 'hrsh7th/cmp-cmdline' }   -- comandos do Vim
-
-  -- Snippets
-  use { 'L3MON4D3/LuaSnip' }              -- mecanismo de snippets
-  use { 'saadparwaiz1/cmp_luasnip' }      -- integração cmp + luasnip
-
-  -- -------------------------------------
-  --  Explorador de Arquivos
-  -- -------------------------------------
-  use {
-    "nvim-neo-tree/neo-tree.nvim",
-    branch = "v3.x",
-    requires = { "nvim-lua/plenary.nvim", "nvim-tree/nvim-web-devicons", "MunifTanjim/nui.nvim" },
-  }
-
-  -- -------------------------------------
-  --  Git & Controle de Versão
-  -- -------------------------------------
-  use { "NeogitOrg/neogit", requires = { "sindrets/diffview.nvim", "nvim-lua/plenary.nvim" } }
-  use { "sindrets/diffview.nvim" }
-
-   -- Plugin para editar s-expressions melhor (útil para Yuck)
-  use 'guns/vim-sexp'
-  use 'tpope/vim-sexp-mappings-for-regular-people'
-
-  -- Plugin parinfer para ajudar na indentação lisp-like
-  use { 'eraserhd/parinfer-rust', run = 'cargo build --release' }
-
-  -- -------------------------------------
-  --  Github Copilot
-  -- ------------------------------------- 
-  use {
-    'github/copilot.vim',
-    branch = 'release'
-  }
-
-   -- -------------------------------------
-  --  JAVA + SPRING BOOT + MAVEN
-  -- -------------------------------------
-  use { 'mfussenegger/nvim-dap' }
-  use { 'williamboman/mason.nvim' }
-  use { 'williamboman/mason-lspconfig.nvim' }
-  use { 'WhoIsSethDaniel/mason-tool-installer.nvim' }
-  use { 'mfussenegger/nvim-jdtls' }
-  use { 'nvim-lua/plenary.nvim' }
-  use { 'MunifTanjim/nui.nvim' }
-  use {
-    'oclay1st/maven.nvim',
-    requires = { 'nvim-lua/plenary.nvim', 'MunifTanjim/nui.nvim' },
-    cmd = { 'Maven', 'MavenInit' },
-  }
-
-  -- -------------------------------------
-  --  Sincronização automática após instalar
-  -- -------------------------------------
-  if packer_bootstrap then
-    require('packer').sync()
-  end
-
-end)
+    -- -------------------------------------
+    --  Java + Spring Boot + Maven
+    -- -------------------------------------
+    { "mfussenegger/nvim-dap" },
+    { "mfussenegger/nvim-jdtls" },  -- configurado em ftplugin/java.lua
+    { "nvim-lua/plenary.nvim" },
+    { "MunifTanjim/nui.nvim" },
+    {
+      "oclay1st/maven.nvim",
+      cmd = { "Maven", "MavenInit" },
+      dependencies = { "nvim-lua/plenary.nvim", "MunifTanjim/nui.nvim" },
+      config = true,
+    },
+  },
+  -- Plugins carregam no startup (os módulos config.* esperam isso)
+  defaults = { lazy = false },
+  install = { colorscheme = { "catppuccin", "habamax" } },
+  checker = { enabled = false },
+  change_detection = { notify = false },
+  rocks = { enabled = false },  -- luarocks não está instalado
+})

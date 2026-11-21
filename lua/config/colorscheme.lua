@@ -14,6 +14,7 @@ if ok_cat then
       telescope = true,
       neogit = true,
       treesitter = true,
+      markview = true,
     },
   })
   vim.cmd("colorscheme catppuccin")

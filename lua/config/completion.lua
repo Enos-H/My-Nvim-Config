@@ -1,5 +1,6 @@
-local cmp = require('cmp')
-local luasnip = require('luasnip')
+local ok_cmp, cmp = pcall(require, 'cmp')
+local ok_luasnip, luasnip = pcall(require, 'luasnip')
+if not (ok_cmp and ok_luasnip) then return end
 
 cmp.setup({
   snippet = {

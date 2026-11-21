@@ -30,4 +30,5 @@ vim.opt.splitright = true
 vim.opt.splitbelow = true
 vim.opt.updatetime = 300
 vim.opt.timeoutlen = 500
-vim.cmd("syntax on")
+-- syntax já vem ligado por padrão no Neovim; "syntax on" aqui disparava
+-- FileType antes do LSP estar configurado (LSP não subia em `nvim arquivo`)

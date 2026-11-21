@@ -30,11 +30,11 @@ end, { nargs = 1 })
 
 vim.api.nvim_create_user_command("ReloadPlugins", function()
   local config_path = vim.fn.stdpath("config") .. "/lua/config"
-  local handle = vim.loop.fs_scandir(config_path)
+  local handle = vim.uv.fs_scandir(config_path)
   if not handle then return end
 
   while true do
-    local name, typ = vim.loop.fs_scandir_next(handle)
+    local name, typ = vim.uv.fs_scandir_next(handle)
     if not name then break end
     if typ == "file" and name:sub(-4) == ".lua" then
       local mod_name = "config." .. name:sub(1, -5) -- remove ".lua"
